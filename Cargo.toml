@@ -1,0 +1,10 @@
+[package]
+name = "AssocRustCpp"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+pulldown-cmark = "0.13"
+tempfile = "3"
+cc = "1.0"
+walkdir = "2.5.0"
