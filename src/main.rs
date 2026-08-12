@@ -1,11 +1,11 @@
-use pulldown_cmark::{CodeBlockKind, Event, Parser, Tag};
+use pulldown_cmark::{CodeBlockKind, Event, Parser, Tag, TagEnd};
 use std::error::Error;
 use std::fs::{self, File};
 use std::io::Write;
 use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use tempfile::tempdir;
+use tempfile::{tempdir, TempDir};
 use walkdir::WalkDir;
 
 const TEST_DIRNAME: &str = "test";
@@ -18,7 +18,7 @@ const RS_EXE_FILENAME: &str = "rs_test";
 struct CppTestRunner {
     dir_path: PathBuf,
     source_path: PathBuf,
-    _temp_dir: tempfile::TempDir,
+    _temp_dir: TempDir,
 }
 
 impl CppTestRunner {
@@ -35,7 +35,7 @@ impl CppTestRunner {
         })
     }
 
-    fn run(&self) -> Result<String, Box<dyn std::error::Error>> {
+    fn run(&self) -> Result<String, Box<dyn Error>> {
         let cpp_exe = self.dir_path.join(CPP_EXE_FILENAME);
 
         // https://learn.microsoft.com/ja-jp/cpp/build/building-on-the-command-line?view=msvc-170
@@ -78,11 +78,10 @@ impl CppTestRunner {
 }
 
 // Rustの単体テストを実行するクラス
-
 struct RustTestRunner {
     dir_path: PathBuf,
     source_path: PathBuf,
-    _temp_dir: tempfile::TempDir,
+    _temp_dir: TempDir,
 }
 
 impl RustTestRunner {
@@ -99,7 +98,7 @@ impl RustTestRunner {
         })
     }
 
-    fn run(&self) -> Result<String, Box<dyn std::error::Error>> {
+    fn run(&self) -> Result<String, Box<dyn Error>> {
         let rs_exe = self.dir_path.join(RS_EXE_FILENAME);
         let rs_compile = Command::new("rustc")
             .args(&[
@@ -150,7 +149,7 @@ fn parse_test_file(file_path: &str) -> Result<(String, String, String), Box<dyn 
                 Some("rs") | Some("rust") => rs_code.push_str(&text),
                 _ => {}
             },
-            Event::End(pulldown_cmark::TagEnd::CodeBlock) => {
+            Event::End(TagEnd::CodeBlock) => {
                 current_lang = None;
             }
             _ => {}
@@ -158,7 +157,7 @@ fn parse_test_file(file_path: &str) -> Result<(String, String, String), Box<dyn 
     }
 
     if cpp_code.is_empty() || rs_code.is_empty() {
-        return Err("Required code blocks (cpp/rust) not found in the markdown file.".into());
+        return Err("Required code blocks (cpp/rs) not found in the markdown file.".into());
     }
 
     Ok((test_name.to_string(), cpp_code, rs_code))
@@ -167,7 +166,7 @@ fn parse_test_file(file_path: &str) -> Result<(String, String, String), Box<dyn 
 // testフォルダ配下に存在する、C++とRustのコードブロックを含むマークダウン形式のファイルを元に、
 // C++とRustをそれぞれビルド・実行し、その実行結果が同一となるか検証する。
 fn test(test_dir: &str) -> Result<(), Box<dyn Error>> {
-    for entry in WalkDir::new(test_dir) {
+    for entry in WalkDir::new(test_dir).sort_by_file_name() {
         let entry = entry.map_err(|e| format!("directory seaching failed: {}", e))?;
         let path = entry.path();
         if path.is_file() && path.extension().and_then(|s| s.to_str()) == Some("txt") {
@@ -212,6 +211,6 @@ fn test(test_dir: &str) -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     Ok(test(TEST_DIRNAME)?)
 }
