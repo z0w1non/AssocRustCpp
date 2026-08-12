@@ -29,7 +29,7 @@ int main() {
 * pulldown_cmark によるマークダウンファイル解析
 * tempfile による一時ファイル管理
 * WalkDir による `std::filesystem::recursive_directory_iterator` に類似した探索
-* vcvars64.bat によるネイティブC++プログラムのコンパイル
+* vcvars64.bat によるネイティブC++プログラムを実行時コンパイル
 
 ## 実行結果
 ```bash
