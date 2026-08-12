@@ -31,6 +31,22 @@ int main() {
 * WalkDir による再帰的なファイルツリー探索
 * vcvars64.bat によるネイティブC++プログラムを実行時コンパイル
 
+## 実行方法
+全てのテストを実行
+```bash
+cargo run
+```
+
+特定のフォルダ配下に含まれるテストを実行
+```bash
+cargo run -- test/foo
+```
+
+特定のテスト実行
+```bash
+cargo run -- test/hello_world
+```
+
 ## 実行結果
 ```bash
 PS C:\AssocRustCpp> cargo run

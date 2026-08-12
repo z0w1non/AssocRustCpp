@@ -1,3 +1,4 @@
+use pulldown_cmark::{CodeBlockKind, Event, Parser, Tag, TagEnd};
 use std::env;
 use std::error::Error;
 use std::fs::{self, File};
@@ -5,8 +6,7 @@ use std::io::Write;
 use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use pulldown_cmark::{CodeBlockKind, Event, Parser, Tag, TagEnd};
-use tempfile::{tempdir, TempDir};
+use tempfile::{TempDir, tempdir};
 use walkdir::WalkDir;
 
 const DEFUALT_TEST_DIRNAME: &str = "test";
@@ -167,7 +167,9 @@ fn parse_test_file(file_path: &str) -> Result<(String, String, String), Box<dyn 
 // C++とRustのコードブロックを含むマークダウン形式のファイルを元に、
 // C++とRustをそれぞれビルド・実行し、その実行結果が同一となるか検証する。
 fn test_file(path: &Path) -> Result<(), Box<dyn Error>> {
-    let file_path_str = path.to_str().ok_or("File path contains invalid UTF-8 strings")?;
+    let file_path_str = path
+        .to_str()
+        .ok_or("File path contains invalid UTF-8 strings")?;
     let (test_name, cpp_code, rs_code) = parse_test_file(file_path_str)?;
 
     let cpp_test_runner = CppTestRunner::new(&cpp_code)?;
@@ -208,7 +210,7 @@ fn test_file(path: &Path) -> Result<(), Box<dyn Error>> {
 }
 
 // 再帰的にサブディレクトリに対してtest_fileを実行する。
-fn test_dir(test_dir: &str) -> Result<(), Box<dyn Error>> {
+fn test_dir(test_dir: &Path) -> Result<(), Box<dyn Error>> {
     for entry in WalkDir::new(test_dir).sort_by_file_name() {
         let entry = entry.map_err(|e| format!("directory seaching failed: {}", e))?;
         let path = entry.path();
@@ -221,11 +223,21 @@ fn test_dir(test_dir: &str) -> Result<(), Box<dyn Error>> {
 }
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
-    let target_dir = if args.len() > 1 {
+    let target = if args.len() > 1 {
         &args[1]
     } else {
         DEFUALT_TEST_DIRNAME
     };
 
-    Ok(test_dir(target_dir)?)
+    let target_path: &Path = Path::new(target);
+    if target_path.is_dir() {
+        test_dir(&target_path)?;
+    } else {
+        let target_file_path: PathBuf = PathBuf::from(format!("{}.txt", target));
+        if target_file_path.is_file() {
+            test_file(&target_file_path)?;
+        }
+    }
+
+    Ok(())
 }
