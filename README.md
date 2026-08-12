@@ -64,3 +64,6 @@ VS Codeのsettings.jsonに下記を設定してターミナルの文字化けを
 
 ## 備忘録
 フォーマッター適用: Shift + Alt + F
+
+## TODO
+単体テストの拡充
