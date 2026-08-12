@@ -1,0 +1,28 @@
+```rs
+use std::fmt::Write;
+use std::error::Error;
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let mut ss: String = String::new();
+
+    write!(&mut ss, "foo")?;
+    write!(&mut ss, "{}", 42)?;
+    println!("{}", ss);
+
+    Ok(())
+}
+```
+
+```cpp
+#include <iostream>
+#include <sstream>
+#include <string>
+
+int main() {
+    std::stringstream ss;
+    ss << "foo";
+    ss << 42;
+    std::cout << ss.str() << std::endl;
+	return 0;
+}
+```

@@ -1,0 +1,19 @@
+```rs
+fn main() {
+    let mut result: String = String::from("foo");
+    result.push_str("bar");
+    println!("{}", result);
+}
+```
+
+```cpp
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string result{ "foo" };
+    result += "bar";
+    std::cout << result << std::endl;
+	return 0;
+}
+```

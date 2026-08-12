@@ -27,8 +27,8 @@ int main() {
 
 ## 技術的要素
 * pulldown_cmark によるマークダウンファイル解析
-* tempfile による一時ファイル管理
-* WalkDir による `std::filesystem::recursive_directory_iterator` に類似した探索
+* tempfile によるRAIIに基づく一時ファイル管理
+* WalkDir による再帰的なファイルツリー探索
 * vcvars64.bat によるネイティブC++プログラムを実行時コンパイル
 
 ## 実行結果
@@ -69,7 +69,8 @@ VS Codeのsettings.jsonに下記を設定してターミナルの文字化けを
 ```
 
 ## 備忘録
-フォーマッター適用: Shift + Alt + F
+* フォーマッター適用: Shift + Alt + F
+* `WalkDir::sort_by_file_name` による兄弟間の名前ソートはメモリ効率が良い。
 
 ## TODO
 単体テストの拡充

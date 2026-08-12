@@ -1,14 +1,15 @@
-use pulldown_cmark::{CodeBlockKind, Event, Parser, Tag, TagEnd};
+use std::env;
 use std::error::Error;
 use std::fs::{self, File};
 use std::io::Write;
 use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use pulldown_cmark::{CodeBlockKind, Event, Parser, Tag, TagEnd};
 use tempfile::{tempdir, TempDir};
 use walkdir::WalkDir;
 
-const TEST_DIRNAME: &str = "test";
+const DEFUALT_TEST_DIRNAME: &str = "test";
 const CPP_SOURCE_FILENAME: &str = "main.cpp";
 const CPP_EXE_FILENAME: &str = "cpp_test";
 const RS_SOURCE_FILENAME: &str = "main.rs";
@@ -163,54 +164,68 @@ fn parse_test_file(file_path: &str) -> Result<(String, String, String), Box<dyn 
     Ok((test_name.to_string(), cpp_code, rs_code))
 }
 
-// testフォルダ配下に存在する、C++とRustのコードブロックを含むマークダウン形式のファイルを元に、
+// C++とRustのコードブロックを含むマークダウン形式のファイルを元に、
 // C++とRustをそれぞれビルド・実行し、その実行結果が同一となるか検証する。
-fn test(test_dir: &str) -> Result<(), Box<dyn Error>> {
+fn test_file(path: &Path) -> Result<(), Box<dyn Error>> {
+    let file_path_str = path.to_str().ok_or("File path contains invalid UTF-8 strings")?;
+    let (test_name, cpp_code, rs_code) = parse_test_file(file_path_str)?;
+
+    let cpp_test_runner = CppTestRunner::new(&cpp_code)?;
+    let rust_test_runner = RustTestRunner::new(&rs_code)?;
+
+    let cpp_output = match cpp_test_runner.run() {
+        Ok(out) => out,
+        Err(e) => {
+            eprintln!("Test {} [SKIP  ] C++ execution failed: {}", test_name, e);
+            return Err(format!("Test {} [SKIP  ] C++ execution failed: {}", test_name, e).into());
+        }
+    };
+
+    let rs_output = match rust_test_runner.run() {
+        Ok(out) => out,
+        Err(e) => {
+            eprintln!("Test {} [SKIP  ] Rust execution failed: {}", test_name, e);
+            return Err(format!("Test {} [SKIP  ] C++ execution failed: {}", test_name, e).into());
+        }
+    };
+
+    let cpp_stdout_trimmed = cpp_output.trim();
+    let rs_stdout_trimmed = rs_output.trim();
+
+    if cpp_stdout_trimmed == rs_stdout_trimmed {
+        println!(
+            "Test {} [PASSED]\nOutput: {}",
+            test_name, cpp_stdout_trimmed
+        );
+    } else {
+        println!(
+            "Test {} [FAILED]\nRust Output: {}\nC++ Output: {}",
+            test_name, rs_stdout_trimmed, cpp_stdout_trimmed
+        );
+    }
+
+    Ok(())
+}
+
+// 再帰的にサブディレクトリに対してtest_fileを実行する。
+fn test_dir(test_dir: &str) -> Result<(), Box<dyn Error>> {
     for entry in WalkDir::new(test_dir).sort_by_file_name() {
         let entry = entry.map_err(|e| format!("directory seaching failed: {}", e))?;
         let path = entry.path();
         if path.is_file() && path.extension().and_then(|s| s.to_str()) == Some("txt") {
-            let file_path_str = path.to_str().ok_or("File path contains invalid UTF-8 strings")?;
-            let (test_name, cpp_code, rs_code) = parse_test_file(file_path_str)?;
-
-            let cpp_test_runner = CppTestRunner::new(&cpp_code)?;
-            let rust_test_runner = RustTestRunner::new(&rs_code)?;
-
-            let cpp_output = match cpp_test_runner.run() {
-                Ok(out) => out,
-                Err(e) => {
-                    eprintln!("Test {} [SKIP  ] C++ execution failed: {}", test_name, e);
-                    continue;
-                }
-            };
-
-            let rs_output = match rust_test_runner.run() {
-                Ok(out) => out,
-                Err(e) => {
-                    eprintln!("Test {} [SKIP  ] Rust execution failed: {}", test_name, e);
-                    continue;
-                }
-            };
-
-            let cpp_stdout_trimmed = cpp_output.trim();
-            let rs_stdout_trimmed = rs_output.trim();
-
-            if cpp_stdout_trimmed == rs_stdout_trimmed {
-                println!(
-                    "Test {} [PASSED]\nOutput: {}",
-                    test_name, cpp_stdout_trimmed
-                );
-            } else {
-                println!(
-                    "Test {} [FAILED]\nRust Output: {}\nC++ Output: {}",
-                    test_name, rs_stdout_trimmed, cpp_stdout_trimmed
-                );
-            }
+            test_file(path)?;
         }
     }
 
     Ok(())
 }
 fn main() -> Result<(), Box<dyn Error>> {
-    Ok(test(TEST_DIRNAME)?)
+    let args: Vec<String> = env::args().collect();
+    let target_dir = if args.len() > 1 {
+        &args[1]
+    } else {
+        DEFUALT_TEST_DIRNAME
+    };
+
+    Ok(test_dir(target_dir)?)
 }

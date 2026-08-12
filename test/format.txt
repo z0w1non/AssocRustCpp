@@ -1,0 +1,19 @@
+```rs
+fn main() {
+    let a: String = String::from("foo");
+    let b: i32 = 42;
+    println!("{}{}", a, b);
+}
+```
+
+```cpp
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string a = "foo";
+    int b = 42;
+    std::cout << a << b << std::endl;
+	return 0;
+}
+```

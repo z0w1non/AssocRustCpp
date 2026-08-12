@@ -1,0 +1,19 @@
+```rs
+fn main() {
+    let number: i32 = 42;
+    let result: String = String::from("foo") + &number.to_string();
+    println!("{}", result);
+}
+```
+
+```cpp
+#include <iostream>
+#include <string>
+
+int main() {
+    int number = 42;
+    std::string result = "foo" + std::to_string(number);
+    std::cout << result << std::endl;
+	return 0;
+}
+```

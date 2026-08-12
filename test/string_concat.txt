@@ -1,0 +1,21 @@
+```rs
+fn main() {
+    let a: String = String::from("foo");
+    let b: String = String::from("bar");
+    let result: String = a + &b; // 右側は &str
+    println!("{}", result);
+}
+```
+
+```cpp
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string a{ "foo" };
+    std::string b{ "bar" };
+    std::string result = a + b;
+    std::cout << result << std::endl;
+	return 0;
+}
+```
