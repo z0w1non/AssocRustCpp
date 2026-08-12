@@ -38,6 +38,8 @@ Output: Hello, World!
 ## 環境構築
 Windows環境でVS Codeによる開発を想定する。
 
+[Rustup](https://rust-lang.org/ja/tools/install/) をインストールする。
+
 VS Codeに以下の拡張機能をインストールする。
 * rust-analyzer
 * Even Better TOML
