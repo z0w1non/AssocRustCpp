@@ -221,7 +221,8 @@ fn test_dir(test_dir: &Path) -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
-fn main() -> Result<(), Box<dyn Error>> {
+
+fn parse_command_line() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
     let target = if args.len() > 1 {
         &args[1]
@@ -239,5 +240,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
+    Ok(())
+}
+fn main() -> Result<(), Box<dyn Error>> {
+    parse_command_line()?;
+    
     Ok(())
 }
