@@ -1,19 +1,15 @@
 ```rs
 fn main() {
-    let a: String = String::from("foo");
-    let b: i32 = 42;
-    println!("{}{}", a, b);
+    println!("{:04}", 42);
 }
 ```
 
 ```cpp
 #include <iostream>
-#include <string>
+#include <cstdio>
 
 int main() {
-    std::string a = "foo";
-    int b = 42;
-    std::cout << a << b << std::endl;
+    std::printf("%04d\n", 42);
 	return 0;
 }
 ```
