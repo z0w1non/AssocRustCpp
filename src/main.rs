@@ -191,18 +191,18 @@ fn test_file(path: &Path) -> Result<(), Box<dyn Error>> {
         }
     };
 
-    let cpp_stdout_trimmed = cpp_output.trim();
-    let rs_stdout_trimmed = rs_output.trim();
+    let cpp_stdout = cpp_output.trim().replace("\r\n", "\n");
+    let rs_stdout = rs_output.trim();
 
-    if cpp_stdout_trimmed == rs_stdout_trimmed {
+    if cpp_stdout == rs_stdout {
         println!(
             "Test {} [PASSED]\nOutput: {}",
-            test_name, cpp_stdout_trimmed
+            test_name, cpp_stdout
         );
     } else {
         println!(
             "Test {} [FAILED]\nRust Output: {}\nC++ Output: {}",
-            test_name, rs_stdout_trimmed, cpp_stdout_trimmed
+            test_name, rs_stdout, cpp_stdout
         );
     }
 
