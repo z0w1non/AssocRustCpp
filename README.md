@@ -100,7 +100,7 @@ VS Codeのsettings.jsonに下記を設定してターミナルの文字化けを
 | `&[T]` | `std::span<T>` (C++20以降) | 既存の配列の一部に対する参照 |
 | `Option<T>` | `std::optional` | 正常系として無効値になる可能性がある値を表現する。 |
 | `None` | `nullptr`, `std::nullopt` | 無効値を表現する。 |
-| `Error<T, E>` | `std::tupple<T, E>` | エラーが発生する可能性のある値に最適化されたタプル。 |
+| `Result<T, E>` | `std::tupple<T, E>` | エラーが発生する可能性のある結果に最適化されたタプル。 |
 | `Box<T>` | `std::unique_ptr<T>` | 単一の所有者が所有権を管理する。 |
 | `Rc<T>` | `std::shared_ptr<T>` | 参照カウンタ方式で複数の所有者が所有権を管理する。非スレッドセーフ。 |
 | `Arc<T>` | `std::shared_ptr<T>` | アトミックな参照カウンタ方式で複数の所有者が所有権を管理する。スレッドセーフ。 |
